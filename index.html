@@ -18,9 +18,9 @@
         <p>Open Road</p>
         <button id="start-button" type="button">
           <span>Start your engine</span>
-          <small>WASD / ARROWS TO DRIVE</small>
+          <small><span class="keyboard-label">WASD / ARROWS TO DRIVE</span><span class="touch-label">DRAG ANYWHERE TO DRIVE</span></small>
         </button>
-        <div class="intro__tip">Space brakes · Shift boosts · R resets</div>
+        <div class="intro__tip"><span class="keyboard-label">Space brakes · Shift boosts · H honks · L mutes · R resets</span><span class="touch-label">One finger drives · Two fingers move the camera · Tap the car to hop</span></div>
       </section>
 
       <aside class="hud" aria-live="polite">
@@ -196,17 +196,18 @@
         </div>
       </section>
 
-      <div class="touch-controls" aria-label="Touch driving controls">
-        <div class="touch-controls__steer">
-          <button data-control="left" aria-label="Steer left">←</button>
-          <button data-control="right" aria-label="Steer right">→</button>
-        </div>
-        <div class="touch-controls__drive">
-          <button data-control="brake" aria-label="Brake or reverse">▼</button>
-          <button class="touch-controls__go" data-control="forward" aria-label="Accelerate">GO</button>
-          <button data-control="boost" aria-label="Boost">⚡</button>
+      <p class="touch-drive-hint" id="touch-drive-hint">Drag to drive <span>Two fingers: camera &amp; zoom · Tap the car: hop</span></p>
+      <div class="drive-toolbar">
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-label="Mute music and sound effects" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m15 9 6 6m0-6-6 6"/></svg>
+          <span id="sound-label">Sound on</span>
+        </button>
+        <div class="touch-actions" aria-label="Car actions">
+          <button id="touch-honk" type="button" aria-label="Honk horn" title="Honk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h5l6-5v14l-6-5H5v-4Zm3 4v5h4l-2-5m9-6v8"/></svg></button>
+          <button id="touch-reset" type="button" aria-label="Reset car and camera" title="Unstuck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8a8 8 0 1 1-1 7M5 3v5h5"/></svg></button>
         </div>
       </div>
+      <audio id="background-music" preload="none" loop data-src="/audio/sudo.mp3"></audio>
 
       <noscript>This experience needs JavaScript enabled.</noscript>
     </main>

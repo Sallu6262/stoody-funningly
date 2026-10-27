@@ -5,6 +5,8 @@ import { Vehicle } from './Vehicle.js'
 import { RESCUE_CONFIG } from './rescueConfig.js'
 import { StoryController } from './Story.js'
 import { PuzzleSystem } from './PuzzleSystem.js'
+import { TouchControls } from './TouchControls.js'
+import { SoundManager } from './SoundManager.js'
 
 export class Game {
   constructor(canvas) {
@@ -18,13 +20,16 @@ export class Game {
     this.frameSamples = []
     this.transientStatusUntil = 0
     this.input = { forward: false, backward: false, left: false, right: false, brake: false, boost: false }
-    this.touchActive = new Set()
+    this.cameraOrbitOffset = 0
+    this.cameraZoom = 1
+    this.cameraElevation = 2.8
     this.cameraCarPosition = new THREE.Vector3()
     this.cameraCarQuaternion = new THREE.Quaternion()
     this.cameraForward = new THREE.Vector3()
     this.cameraUp = new THREE.Vector3(0, 0, 1)
     this.cameraDesiredPosition = new THREE.Vector3()
     this.cameraDesiredTarget = new THREE.Vector3()
+    this.cameraOrbitDirection = new THREE.Vector3()
 
     this.scene = new THREE.Scene()
     this.scene.background = new THREE.Color(0xbadcd6)
@@ -41,6 +46,10 @@ export class Game {
     this.renderer.toneMappingExposure = 1.05
     this.renderer.shadowMap.enabled = true
     this.compactDevice = window.innerWidth <= 720 || window.matchMedia('(pointer: coarse)').matches
+    if (this.compactDevice) {
+      this.cameraZoom = 1.6
+      this.cameraElevation = 7.5
+    }
     this.renderer.shadowMap.type = this.compactDevice ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap
     this.renderer.setClearColor(0xbadcd6)
 
@@ -64,10 +73,12 @@ export class Game {
     this.speedElement = document.querySelector('#speed')
     this.statusElement = document.querySelector('#status')
     this.hintElement = document.querySelector('#hint')
+    this.audio = new SoundManager()
     this.setupRescueUI()
     this.story = new StoryController(this)
     this.puzzles = new PuzzleSystem(this)
     this.setupTrainUI()
+    this.touchControls = new TouchControls(this)
     this.setupInput()
     this.resize()
     window.addEventListener('resize', () => this.resize())
@@ -126,6 +137,10 @@ export class Game {
 
     window.addEventListener('keydown', (event) => {
       const isTyping = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
+      if (event.code === 'KeyL' && !isTyping && !event.repeat) {
+        this.audio.toggleMute()
+        return
+      }
       if (this.isDrivingBlocked() && !isTyping) return
       if (event.code === 'KeyE' && !isTyping) {
         if (event.repeat) return
@@ -134,7 +149,12 @@ export class Game {
         return
       }
       if (isTyping) return
+      if (event.code === 'KeyH' && !event.repeat) {
+        this.audio.honk()
+        return
+      }
       if (event.code === 'KeyR') {
+        this.touchControls.reset()
         this.vehicle.reset()
         this.setTransientStatus('RESET', 700)
         return
@@ -142,6 +162,7 @@ export class Game {
       const action = keyMap[event.code]
       if (!action) return
       event.preventDefault()
+      this.touchControls.reset()
       this.input[action] = true
     })
 
@@ -156,34 +177,16 @@ export class Game {
       for (const key of Object.keys(this.input)) this.input[key] = false
     })
 
-    for (const button of document.querySelectorAll('[data-control]')) {
-      const control = button.dataset.control
-      const action = control === 'left' || control === 'right' ? control
-        : control === 'forward' ? 'forward'
-          : control === 'boost' ? 'boost' : 'backward'
-      const begin = (event) => {
-        event.preventDefault()
-        if (this.isDrivingBlocked()) return
-        button.setPointerCapture?.(event.pointerId)
-        this.touchActive.add(action)
-        this.input[action] = true
-        if (action === 'boost') this.input.forward = true
-        button.classList.add('is-active')
-      }
-      const end = (event) => {
-        event.preventDefault()
-        this.touchActive.delete(action)
-        this.input[action] = false
-        if (action === 'boost' || action === 'forward') {
-          this.input.forward = this.touchActive.has('forward') || this.touchActive.has('boost')
-        }
-        button.classList.remove('is-active')
-      }
-      button.addEventListener('pointerdown', begin)
-      button.addEventListener('pointerup', end)
-      button.addEventListener('pointercancel', end)
-      button.addEventListener('pointerleave', (event) => { if (event.buttons) end(event) })
-    }
+    document.querySelector('#touch-reset').addEventListener('click', () => {
+      if (!this.started || this.isDrivingBlocked()) return
+      this.touchControls.reset()
+      this.vehicle.reset()
+      this.cameraOrbitOffset = 0
+      this.cameraZoom = this.touchControls.touchMode ? 1.6 : 1
+      this.cameraElevation = this.touchControls.touchMode ? 7.5 : 2.8
+      this.audio.playHop()
+    })
+    document.querySelector('#touch-honk').addEventListener('click', () => this.audio.honk())
   }
 
   setupRescueUI() {
@@ -268,6 +271,8 @@ export class Game {
     document.documentElement.classList.add('train-view-active')
     this.pauseDriving(locked ? 'IMPACT' : 'TRAIN VIEW')
     if (!locked) {
+      this.audio.setVideoOpen(true)
+      this.trainVideo.muted = this.audio.muted
       this.trainVideoError.hidden = true
       this.trainVideoDialog.showModal()
       if (!this.trainVideo.getAttribute('src')) this.trainVideo.src = this.trainVideo.dataset.src
@@ -285,6 +290,7 @@ export class Game {
     this.trainVideo.pause()
     this.trainVideo.currentTime = 0
     if (this.trainVideoDialog.open) this.trainVideoDialog.close()
+    this.audio.setVideoOpen(false)
     this.trainViewLayer.classList.remove('is-active', 'is-impact')
     document.documentElement.classList.remove('train-view-active')
     if (resume && !this.isDrivingBlocked()) {
@@ -327,6 +333,7 @@ export class Game {
   }
 
   async start() {
+    this.audio.start()
     await this.puzzles.prepare()
     if (this.puzzles.resumeSession()) {
       this.story.resumeFreeDrive()
@@ -350,8 +357,7 @@ export class Game {
 
   pauseDriving(status = 'PAUSED') {
     for (const key of Object.keys(this.input)) this.input[key] = false
-    this.touchActive.clear()
-    for (const button of document.querySelectorAll('[data-control].is-active')) button.classList.remove('is-active')
+    this.touchControls?.reset()
     this.vehicle.body.velocity.setZero()
     this.vehicle.body.angularVelocity.setZero()
     this.vehicle.body.force.setZero()
@@ -359,6 +365,8 @@ export class Game {
     this.vehicle.forwardSpeed = 0
     this.vehicle.speed = 0
     this.vehicle.boosting = false
+    this.vehicle.throttle = 0
+    this.vehicle.braking = false
     for (let i = 0; i < 4; i += 1) {
       this.vehicle.raycast.applyEngineForce(0, i)
       this.vehicle.raycast.setBrake(0, i)
@@ -377,6 +385,7 @@ export class Game {
     if (now - this.lastCollisionAt < 180) return
     this.lastCollisionAt = now
     this.collisions += 1
+    this.audio.collision(impact, type)
     this.setTransientStatus(impact > 6 ? 'BIG HIT!' : type === 'ramp' ? 'AIRTIME' : 'BUMP!', 720)
   }
 
@@ -397,9 +406,10 @@ export class Game {
       forward.z = 0
       if (forward.lengthSq() < 0.001) forward.set(1, 0, 0)
       else forward.normalize()
-      const chaseDistance = 5.4 + Math.min(speed * 0.055, 1.3)
-      desiredPosition.addScaledVector(forward, -chaseDistance).addScaledVector(up, 2.8 + Math.min(speed * 0.025, 0.6))
-      desiredTarget.addScaledVector(forward, 2.0 + Math.min(speed * 0.11, 2.2)).addScaledVector(up, 0.38)
+      const chaseDistance = (5.4 + Math.min(speed * 0.055, 1.3)) * this.cameraZoom
+      const cameraDirection = this.cameraOrbitDirection.copy(forward).applyAxisAngle(up, this.cameraOrbitOffset)
+      desiredPosition.addScaledVector(cameraDirection, -chaseDistance).addScaledVector(up, this.cameraElevation + Math.min(speed * 0.025, 0.6))
+      desiredTarget.addScaledVector(forward, this.touchControls.touchMode ? 0 : 2.0 + Math.min(speed * 0.11, 2.2)).addScaledVector(up, 0.38)
     }
 
     const follow = 1 - Math.exp(-delta * (this.started ? 5.6 : 2.1))
@@ -440,8 +450,9 @@ export class Game {
     this.lastFrame = time
     this.elapsed += delta
 
+    this.touchControls.update()
     if (this.started && !this.isDrivingBlocked()) {
-      this.vehicle.updateControls(this.input, delta)
+      this.vehicle.updateControls(this.touchControls.active ? this.touchControls.input : this.input, delta)
       this.physics.step(1 / 60, delta, 4)
     }
     this.vehicle.syncVisuals()
@@ -459,6 +470,7 @@ export class Game {
             : `${Math.ceil(train.remainingSeconds)} SECONDS REMAINING`
     } else if (!storyCameraActive) this.updateCamera(delta)
     this.updateHud()
+    this.audio.update(this)
     this.renderer.render(this.scene, this.camera)
 
     if (delta > 0) {
@@ -493,13 +505,15 @@ export class Game {
         train: this.world.rescue.train.getState()
       },
       wheelContact: this.vehicle.raycast.wheelInfos.map((wheel) => ({
-        contact: wheel.isInContact,
+        contact: wheel.raycastResult.hasHit,
         suspension: wheel.suspensionLength,
         engine: wheel.engineForce,
         steer: wheel.steering
       })),
       sleepState: this.vehicle.body.sleepState,
-      input: { ...this.input }
+      input: { ...this.input },
+      touch: this.touchControls.getState(),
+      audio: this.audio.getState()
     }
   }
 }

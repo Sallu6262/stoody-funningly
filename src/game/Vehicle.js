@@ -17,6 +17,9 @@ export class Vehicle {
     this.forwardSpeed = 0
     this.steering = 0
     this.boosting = false
+    this.throttle = 0
+    this.braking = false
+    this.lastHopAt = 0
     this.upsideDownTime = 0
 
     this.vehicleMaterial = new CANNON.Material('f1-vehicle')
@@ -99,7 +102,7 @@ export class Vehicle {
 
     const speedRatio = Math.min(Math.abs(this.forwardSpeed) / 24, 1)
     const steerLimit = THREE.MathUtils.lerp(0.48, 0.27, speedRatio)
-    const targetSteer = (input.left ? -1 : 0) + (input.right ? 1 : 0)
+    const targetSteer = Number.isFinite(input.steer) ? input.steer : (input.left ? -1 : 0) + (input.right ? 1 : 0)
     const desiredSteer = targetSteer * steerLimit
     const steerStep = delta * (targetSteer === 0 ? 3.7 : 2.45)
     this.steering += THREE.MathUtils.clamp(desiredSteer - this.steering, -steerStep, steerStep)
@@ -109,18 +112,22 @@ export class Vehicle {
     const maxForward = input.boost ? 29 : 22
     const forwardForce = input.boost ? 820 : 540
     let engine = 0
+    this.throttle = Number.isFinite(input.throttle) ? input.throttle : (input.forward ? 1 : 0) - (input.backward ? 1 : 0)
+    const forward = this.throttle > 0
+    const backward = this.throttle < 0
 
-    if (input.forward && (this.forwardSpeed < maxForward || this.forwardSpeed < 0)) {
-      engine = -forwardForce
-    } else if (input.backward && (this.forwardSpeed > -9 || this.forwardSpeed > 0)) {
-      engine = this.forwardSpeed > 1.4 ? 0 : 310
+    if (forward && (this.forwardSpeed < maxForward || this.forwardSpeed < 0)) {
+      engine = -forwardForce * this.throttle
+    } else if (backward && (this.forwardSpeed > -9 || this.forwardSpeed > 0)) {
+      engine = this.forwardSpeed > 1.4 ? 0 : 310 * Math.abs(this.throttle)
     }
 
     this.raycast.applyEngineForce(engine, 2)
     this.raycast.applyEngineForce(engine, 3)
-    this.boosting = Boolean(input.forward && input.boost && engine)
+    this.boosting = Boolean(forward && input.boost && engine)
 
-    const braking = input.brake || (input.backward && this.forwardSpeed > 1.4)
+    const braking = input.brake || (backward && this.forwardSpeed > 1.4)
+    this.braking = Boolean(braking)
     const brakeForce = braking ? 18 : 0
     for (let i = 0; i < 4; i += 1) this.raycast.setBrake(brakeForce, i)
     this.brakeLight.material.emissiveIntensity = braking ? 2.4 : 0.15
@@ -130,7 +137,7 @@ export class Vehicle {
     this.body.applyForce(tempDownforce, this.body.position)
 
     // Gentle coast drag keeps the original's precise stop/start character.
-    if (!input.forward && !input.backward && !input.brake && Math.abs(this.forwardSpeed) > 0.08) {
+    if (!forward && !backward && !input.brake && Math.abs(this.forwardSpeed) > 0.08) {
       const drag = tempForward.scale(-this.forwardSpeed * 0.32)
       this.body.applyImpulse(drag, this.body.position)
     }
@@ -156,6 +163,16 @@ export class Vehicle {
     }
   }
 
+  hop() {
+    // Cannon clears isInContact while updating visual wheel transforms;
+    // the raycast result preserves the last physics step's real contact.
+    if (Date.now() - this.lastHopAt < 800 || this.raycast.wheelInfos.filter((wheel) => wheel.raycastResult.hasHit).length < 2) return false
+    this.lastHopAt = Date.now()
+    this.body.wakeUp()
+    this.body.applyImpulse(new CANNON.Vec3(0, 0, this.body.mass * 3.1), this.body.position)
+    return true
+  }
+
   reset(position = { x: -9, y: -18, z: 0.55 }, yaw = 0) {
     this.body.position.set(position.x, position.y, position.z)
     this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), yaw)
@@ -167,6 +184,8 @@ export class Vehicle {
     this.forwardSpeed = 0
     this.speed = 0
     this.boosting = false
+    this.throttle = 0
+    this.braking = false
     this.steering = 0
     this.upsideDownTime = 0
     for (let i = 0; i < 4; i += 1) {

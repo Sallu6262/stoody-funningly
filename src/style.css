@@ -191,7 +191,35 @@ button { font: inherit; }
   transition: opacity .4s ease;
 }
 
-.touch-controls { display: none; }
+.touch-label, #start-button .touch-label { display: none; }
+.touch-mode .keyboard-label, .touch-mode #start-button .keyboard-label { display: none; }
+.touch-mode .touch-label, .touch-mode #start-button .touch-label { display: inline; }
+.drive-toolbar {
+  position: fixed;
+  z-index: 9;
+  inset: auto max(22px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.drive-toolbar button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 13px; border: 1px solid #ffffff59; border-radius: 14px; color: #eafff4; background: #133a3ed9; box-shadow: 0 5px 20px #09232729; font-size: 10px; font-weight: 800; cursor: pointer; pointer-events: auto; backdrop-filter: blur(8px); }
+.drive-toolbar button:hover { background: #22535a; }
+.drive-toolbar button:focus-visible { outline: 3px solid #ffd685; outline-offset: 3px; }
+.drive-toolbar svg { width: 20px; height: 20px; }
+.sound-toggle .sound-slash, .sound-toggle.is-muted .sound-waves { display: none; }
+.sound-toggle.is-muted .sound-slash { display: block; }
+.sound-toggle.is-muted { color: #c0cace; }
+.touch-actions { display: none; gap: 8px; }
+.touch-actions button { width: 44px; padding: 10px; touch-action: manipulation; }
+.touch-drive-hint { display: none; position: fixed; z-index: 5; bottom: max(82px, calc(env(safe-area-inset-bottom) + 70px)); left: 50%; width: 280px; margin: 0; padding: 10px 14px; transform: translateX(-50%); border-radius: 14px; color: #fff; background: #133a3ebd; text-align: center; font-size: 12px; font-weight: 800; pointer-events: none; backdrop-filter: blur(8px); transition: opacity .5s ease; }
+.touch-drive-hint span { display: block; margin-top: 3px; color: #d5e5e3; font-size: 9px; font-weight: 500; }
+.touch-drive-hint.is-used { opacity: 0; }
+.touch-mode .touch-actions { display: flex; }
+.touch-mode .touch-drive-hint { display: block; }
+.touch-mode .hint { display: none; }
+.touch-mode .drive-toolbar { justify-content: space-between; }
+.intro:not(.is-hidden) ~ .drive-toolbar, .intro:not(.is-hidden) ~ .touch-drive-hint { visibility: hidden; }
 
 .rescue-controls {
   position: fixed;
@@ -433,7 +461,7 @@ button { font: inherit; }
 .clue-form input:focus { border-color: #ffd685; box-shadow: 0 0 0 3px rgba(255,214,133,.16); }
 .clue-form output { min-height: 13px; color: #ffad9d; font-size: 10px; font-weight: 750; }
 .clue-form.has-error input { border-color: #ff826f; animation: console-shake .2s linear 2; }
-.story-active .touch-controls, .story-active .rescue-controls, .story-active .station-controls { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+.story-active .touch-actions, .story-active .touch-drive-hint, .story-active .rescue-controls, .story-active .station-controls { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
 .cinematic-active .hud, .cinematic-active .hint, .cinematic-active .route-tools, .cinematic-active .approval-status { visibility: hidden; opacity: 0; }
 
 .puzzle-layer {
@@ -542,7 +570,7 @@ button { font: inherit; }
 .station-controls button { display: grid; min-width: 180px; padding: 11px 15px; border: 1px solid rgba(255,255,255,.4); border-radius: 15px; color: #fff4d1; background: rgba(14,48,54,.91); box-shadow: 0 12px 30px rgba(5,31,35,.24); text-align: left; cursor: pointer; backdrop-filter: blur(10px); }
 .station-controls span { font-size: 13px; font-weight: 900; text-transform: uppercase; }
 .station-controls small { margin-top: 3px; color: #70d6c9; font-size: 8px; font-weight: 900; letter-spacing: .11em; }
-.puzzle-active .touch-controls, .puzzle-active .rescue-controls, .puzzle-active .station-controls { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+.puzzle-active .touch-actions, .puzzle-active .touch-drive-hint, .puzzle-active .rescue-controls, .puzzle-active .station-controls { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
 
 .timer-hud {
   position: fixed;
@@ -672,7 +700,7 @@ button { font: inherit; }
 .train-view__frame strong { margin-top: 4px; font-size: clamp(14px, 2vw, 21px); }
 .train-view__frame small { margin-top: 4px; color: rgba(255,255,255,.65); font-size: 9px; }
 .train-view.is-impact .train-view__frame span { color: #ff8d7d; }
-.train-view-active .hud, .train-view-active .hint, .train-view-active .mission-hud, .train-view-active .timer-hud, .train-view-active .codes-wallet, .train-view-active .route-tools, .train-view-active .approval-status, .train-view-active .touch-controls { visibility: hidden !important; opacity: 0 !important; }
+.train-view-active .hud, .train-view-active .hint, .train-view-active .mission-hud, .train-view-active .timer-hud, .train-view-active .codes-wallet, .train-view-active .route-tools, .train-view-active .approval-status, .train-view-active .drive-toolbar, .train-view-active .touch-drive-hint { visibility: hidden !important; opacity: 0 !important; }
 
 .failure-layer, .success-layer {
   position: fixed;
@@ -696,12 +724,13 @@ button { font: inherit; }
 .failure-layer button { margin-top: 22px; padding: 12px 18px; border: 0; border-radius: 999px; color: #173a3f; background: #ffd685; font-size: 11px; font-weight: 900; cursor: pointer; }
 .success-layer small { display: block; margin-top: 20px; color: #70d6c9; font-size: 9px; font-weight: 900; letter-spacing: .12em; }
 .failure-active .rescue-controls, .success-active .rescue-controls { display: none; }
+.failure-active .touch-actions, .failure-active .touch-drive-hint, .success-active .touch-actions, .success-active .touch-drive-hint { visibility: hidden; }
 
 @media (pointer: coarse), (max-width: 720px) {
   .intro h1 { font-size: clamp(50px, 16vw, 88px); }
   .intro h1 span { display: block; }
   .intro h1 i { display: block; margin: .12em 0; }
-  .intro__tip { display: none; }
+  .intro__tip { max-width: 290px; font-size: 10px; line-height: 1.6; }
   .hint { bottom: 108px; }
   .rescue-controls { left: 14px; bottom: 100px; width: min(360px, calc(100vw - 28px)); }
   .station-controls { left: 14px; bottom: 100px; }
@@ -709,7 +738,14 @@ button { font: inherit; }
   .route-tools { top: 75px; left: 14px; width: 156px; gap: 10px; }
   .minimap-shell { padding: 7px; border-radius: 17px; }
   .minimap-shell small { display: none; }
-  .mission-hud { top: 14px; min-width: 220px; }
+  .hud__speed { gap: 4px; padding: 9px; }
+  .hud__speed strong { min-width: 40px; font-size: 20px; }
+  .hud__speed span { font-size: 6px; }
+  .mission-hud { top: 14px; left: 76px; right: 124px; min-width: 0; padding: 10px; translate: 0 -12px; }
+  .mission-hud.is-visible { translate: 0 0; }
+  .mission-hud span { font-size: 6px; }
+  .mission-hud strong { padding-right: 38px; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+  .mission-hud b { right: 8px; font-size: 15px; }
   .story-panel { padding: 24px 20px 20px; }
   .puzzle-layer { padding: 12px; place-items: start center; }
   .puzzle-panel { width: 100%; max-height: calc(100vh - 24px); padding: 20px 16px; }
@@ -732,37 +768,7 @@ button { font: inherit; }
   .train-video-dialog__header { padding: 12px; }
   .codes-wallet { top: auto; right: 14px; bottom: 178px; }
 
-  .touch-controls {
-    position: fixed;
-    z-index: 5;
-    inset: auto max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-    transition: opacity .3s ease, visibility .3s ease;
-  }
-
-  .intro:not(.is-hidden) ~ .touch-controls { visibility: hidden; opacity: 0; }
-
-  .touch-controls > div { display: flex; align-items: flex-end; gap: 8px; }
-
-  .touch-controls button {
-    width: 54px;
-    height: 54px;
-    border: 1px solid rgba(255,255,255,.45);
-    border-radius: 18px;
-    color: #fff;
-    background: rgba(14, 48, 54, .68);
-    box-shadow: 0 7px 20px rgba(5,31,35,.18);
-    font-size: 21px;
-    font-weight: 900;
-    pointer-events: auto;
-    touch-action: none;
-    backdrop-filter: blur(8px);
-  }
-
-  .touch-controls button.is-active { color: #15373c; background: #ffd685; transform: scale(.95); }
-  .touch-controls .touch-controls__go { width: 64px; height: 64px; border-radius: 50%; color: #15373c; background: #ff9d5c; font-size: 15px; }
+  .drive-toolbar { inset: auto max(14px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
 }
 
 @media (max-height: 500px) {

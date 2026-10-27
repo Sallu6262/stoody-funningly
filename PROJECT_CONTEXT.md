@@ -1,6 +1,6 @@
 # Salman & Wajeha Racing — Project Handoff
 
-Last updated: 27 October 2026 (Asia/Karachi)
+Last updated: 28 October 2026 (Asia/Karachi)
 
 ## Start here in a new chat
 
@@ -36,7 +36,8 @@ The current production version has:
 - A separate Answer Submission Station and a reusable schema-driven puzzle form used by all three checkpoints.
 - Google Sheets draft saving, submission, manual approval/rejection polling, examiner feedback, and three server-awarded lock codes.
 - Persisted per-paper timers, timeout/retry flow, a train-video Easter egg, server-verified lock entry, and a final rescue sequence.
-- Desktop keyboard and mobile/coarse-pointer controls.
+- Desktop keyboard controls and a car-centered touch joystick ported from Bruno Simon's Folio 2025, with analog throttle, reverse, two-finger camera/pinch zoom, tap-to-hop, horn and reset.
+- Gesture-activated music, speed-sensitive engine/road loops, collision/skid/boost/UI/train/result sounds, and a persistent mute switch.
 - Production deployment on Netlify with serverless functions protecting the Google integration.
 
 ## Completed phases
@@ -126,6 +127,8 @@ The updated Apps Script seeds `demo-paper-1`, `demo-paper-2`, and `demo-paper-3`
 
 - `src/game/Game.js` — scene/physics loop, input, camera, HUD, rescue interaction, and debug state.
 - `src/game/Vehicle.js` — Cannon raycast vehicle tuning and wheel/suspension behavior.
+- `src/game/TouchControls.js` — Folio 2025-style ground joystick, cubic analog throttle/steering, multi-touch camera, tap-to-hop, cancellation and focus/resize cleanup.
+- `src/game/SoundManager.js` — gesture-safe Web Audio mixer, engine/road/effect loops, impact sounds, music streaming, mute persistence, page visibility and video ducking.
 - `src/game/F1Model.js` — lightweight procedural car visuals.
 - `src/game/World.js` — circuit, lighting-supporting environment, scenery, and obstacles.
 - `src/game/RescueEnvironment.js` — railway, tunnel, captive, locks, and three destinations.
@@ -164,19 +167,26 @@ Current build sizes:
 
 | File/scope | Raw | Gzip |
 |---|---:|---:|
-| HTML | 10,846 B | 3,213 B |
-| CSS | 27,486 B | 6,114 B |
-| JavaScript | 803,510 B | 213,249 B |
+| HTML | 11,929 B | 3,534 B |
+| CSS | 29,349 B | 6,504 B |
+| JavaScript | 819,892 B | 218,204 B |
 | Favicon | 307 B | 237 B |
 | Locomotive GLB | 821,108 B | 246,224 B |
 | Train video (on demand) | 3,684,490 B | 3,676,886 B |
-| Built artifact total | 5,347,747 B | 4,145,923 B |
+| Audio assets and license/provenance (after start) | 6,359,279 B | 6,127,556 B |
+| Built artifact total | 11,726,354 B | 10,279,145 B |
 
 The locomotive is now requested by Phase 5 because it is part of the active timer threat and train camera.
 
 Train-video update verification (27 October 2026): Playwright confirmed the button is above the map on desktop and mobile, the supplied 1280×720 video plays, the popup fits the viewport, the red close button and Escape stop/reset playback, and timeout while watching transitions safely to impact and retry. The five existing tests and production build passed.
 
 The train-video update was deployed from Git commit `9519452` as Netlify deploy `6ae0eec9459d2d5c571ef1b9`. A production Playwright check verified video playback from the public asset URL, red-close dismissal, stopped/reset media, restored button focus, and no JavaScript runtime errors. The existing Checkpoint 2/3 backend configuration warnings remain unchanged.
+
+Mobile/audio update (28 October 2026): replaced the five mobile buttons with the current Folio 2025 joystick's ring shader, 2–4.5 world-unit throttle range, cubic response, and 270-degree forward sector, adapted to Z-up/Cannon. Mobile camera framing now leaves room to touch in front of and behind the car. Keyboard driving/brake/boost bindings are preserved; H honks and L mutes. Multi-touch suspends driving and controls orbit/elevation/pinch zoom, and a grounded tap hops the car. Cannon clears `isInContact` during visual updates, so hop grounding correctly uses `raycastResult.hasHit`.
+
+Audio uses six small MIT-covered samples from Folio 2025 plus Kounine's explicitly CC0 **Sudo** music track. Source revision `41046b57eeed8d156d9c3fd7fa259900baef7816`, paths, licenses, and exact sizes are recorded in `THIRD_PARTY_NOTICES.md` / `public/audio/README.md`; all downloaded files were verified against upstream Git blob hashes. No new runtime dependency was added. Music streams after the first start gesture instead of decoding the entire track; welcome-screen audio requests are zero. Web Audio effects are limited/compressed, randomized and scaled with impact/speed. Mute persists; video playback and page hiding silence/pause game audio.
+
+Local verification: 9/9 tests passed. Playwright used a real touch-enabled 390×844 context with trusted CDP touch events to verify acceleration, proportional steering, reverse, neutral release/cancel, multi-touch camera, hop, physical collision audio, music/output energy, gesture activation, mute refresh persistence, and train-video audio handoff. Desktop W/Shift/Space/L checks passed, with no runtime errors. Browser emulation is not a physical iPhone/Safari device test.
 
 Existing verification screenshots:
 
