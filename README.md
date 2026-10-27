@@ -6,7 +6,7 @@ Live production game: https://salman-wajeha-racing.netlify.app
 
 The Phase 5 build includes three configurable timed checkpoint papers, physical Answer Submission Stations, server-verified approvals and lock codes, a moving train with timeout/retry, and the final rescue. A private Google spreadsheet hosts papers using `Papers`, `Questions`, and `Responses` tabs. Forms can contain any mix of MCQs, text, numbers, and working steps; drafts update while the player types, and approval is polled in the background while the player explores.
 
-The live Google backend still needs its Checkpoint 2/3 configuration rollout; see [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md). The train-video popup, current mobile joystick and audio are implemented locally and tracked in the same deployment history.
+The live Google backend still needs its Checkpoint 2/3 configuration rollout; see [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md). The train-video popup, current mobile joystick and audio are deployed and tracked in the same deployment history.
 
 ## Run locally
 

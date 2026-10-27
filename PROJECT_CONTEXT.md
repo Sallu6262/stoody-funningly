@@ -188,6 +188,8 @@ Audio uses six small MIT-covered samples from Folio 2025 plus Kounine's explicit
 
 Local verification: 9/9 tests passed. Playwright used a real touch-enabled 390×844 context with trusted CDP touch events to verify acceleration, proportional steering, reverse, neutral release/cancel, multi-touch camera, hop, physical collision audio, music/output energy, gesture activation, mute refresh persistence, and train-video audio handoff. Desktop W/Shift/Space/L checks passed, with no runtime errors. Browser emulation is not a physical iPhone/Safari device test.
 
+Deployed the mobile/audio update from Git commit `0fba28d` as Netlify deploy `6ae1107b76433173751b5183` on 28 October 2026 (Asia/Karachi). A fresh production touch session verified zero audio requests before Start, all six effects loading successfully, music and engine playback, real touch acceleration/ring display, neutral release, and the 844×390 landscape toolbar layout. No JavaScript runtime errors were recorded; the existing Checkpoint 2/3 live backend configuration remains deferred.
+
 Existing verification screenshots:
 
 - `production-live-check.png`
