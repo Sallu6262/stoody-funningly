@@ -270,12 +270,19 @@ button { font: inherit; }
 
 @keyframes console-shake { 50% { translate: 3px 0; } }
 
-.minimap-shell {
+.route-tools {
   position: fixed;
   z-index: 4;
   top: 82px;
   left: 22px;
   width: 184px;
+  display: grid;
+  gap: 12px;
+}
+
+.minimap-shell {
+  position: relative;
+  width: 100%;
   padding: 10px;
   visibility: hidden;
   opacity: 0;
@@ -427,7 +434,7 @@ button { font: inherit; }
 .clue-form output { min-height: 13px; color: #ffad9d; font-size: 10px; font-weight: 750; }
 .clue-form.has-error input { border-color: #ff826f; animation: console-shake .2s linear 2; }
 .story-active .touch-controls, .story-active .rescue-controls, .story-active .station-controls { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
-.cinematic-active .hud, .cinematic-active .hint, .cinematic-active .minimap-shell, .cinematic-active .approval-status { visibility: hidden; opacity: 0; }
+.cinematic-active .hud, .cinematic-active .hint, .cinematic-active .route-tools, .cinematic-active .approval-status { visibility: hidden; opacity: 0; }
 
 .puzzle-layer {
   position: fixed;
@@ -594,21 +601,57 @@ button { font: inherit; }
 .codes-wallet button:disabled { color: rgba(255,255,255,.35); background: rgba(255,255,255,.04); cursor: default; }
 
 .train-view-open {
-  position: fixed;
-  z-index: 5;
-  top: 92px;
-  left: 82px;
-  padding: 9px 13px;
-  border: 1px solid rgba(255,255,255,.35);
-  border-radius: 999px;
-  color: #fff1c7;
-  background: rgba(11,39,43,.78);
-  box-shadow: 0 9px 25px rgba(5,31,35,.18);
-  font-size: 9px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px;
+  border: 1px solid #a48acb;
+  border-radius: 11px 5px 5px 11px;
+  color: #302044;
+  background: linear-gradient(120deg, #eee5ff, #c6b2ee);
+  box-shadow: 0 4px 0 #5b437b, 0 10px 24px #24153e2b;
+  font-family: inherit;
+  font-size: 11px;
   font-weight: 900;
+  text-align: left;
   cursor: pointer;
-  backdrop-filter: blur(9px);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
 }
+.train-view-open:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 6px 0 #5b437b, 0 14px 28px #24153e38; }
+.train-view-open:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b437b; }
+.train-view-open:focus-visible { outline: 3px solid #482d72; outline-offset: 5px; }
+.train-view-open__icon { display: grid; flex: 0 0 30px; height: 32px; place-items: center; border-radius: 8px; color: #bff6dc; background: #45305f; }
+.train-view-open__icon svg { width: 22px; height: 22px; }
+.train-view-open__label { display: grid; flex: 1; gap: 4px; white-space: nowrap; }
+.train-view-open__label small { color: #64517e; font-size: 6px; font-weight: 900; letter-spacing: .16em; }
+.train-view-open__play { align-self: stretch; display: grid; align-items: center; padding-left: 7px; border-left: 1px dashed #8f79af; font-size: 9px; }
+
+.train-video-dialog {
+  width: min(880px, calc(100vw - 40px), calc((100dvh - 130px) * 16 / 9));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #bba7dd;
+  border-radius: 19px;
+  color: #f6efff;
+  background: #171020;
+  box-shadow: 0 28px 110px #0009;
+}
+.train-video-dialog::backdrop { background: #080b16c4; backdrop-filter: blur(7px); }
+.train-video-dialog__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; background: linear-gradient(110deg, #302144, #191321); }
+.train-video-dialog__header > div > span { color: #bff6dc; font-size: 8px; font-weight: 900; letter-spacing: .2em; }
+.train-video-dialog__header h2 { margin: 4px 0 0; font-size: clamp(16px, 2vw, 21px); }
+.train-video-dialog__close { display: grid; flex: 0 0 42px; height: 42px; place-items: center; padding: 0; border: 1px solid #ff8d98; border-radius: 12px; color: #fff; background: #d8354c; box-shadow: 0 3px 0 #8a1731; cursor: pointer; }
+.train-video-dialog__close span { font: 32px/1 Arial, sans-serif; }
+.train-video-dialog__close:hover { background: #ed445c; }
+.train-video-dialog__close:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.train-video-dialog video { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: calc(100dvh - 130px); object-fit: contain; background: #000; }
+.train-video-dialog__error { padding: 0 18px 16px; color: #ffb9c2; font-size: 13px; }
 
 .train-view {
   position: fixed;
@@ -628,9 +671,8 @@ button { font: inherit; }
 .train-view__frame span { color: #ffb266; font-size: 8px; font-weight: 900; letter-spacing: .22em; }
 .train-view__frame strong { margin-top: 4px; font-size: clamp(14px, 2vw, 21px); }
 .train-view__frame small { margin-top: 4px; color: rgba(255,255,255,.65); font-size: 9px; }
-.train-view > button { position: absolute; z-index: 2; top: calc(8vh + 18px); right: 22px; padding: 9px 14px; border: 1px solid rgba(255,255,255,.36); border-radius: 999px; color: #fff; background: rgba(8,31,35,.72); font-size: 9px; font-weight: 900; cursor: pointer; }
 .train-view.is-impact .train-view__frame span { color: #ff8d7d; }
-.train-view-active .hud, .train-view-active .hint, .train-view-active .mission-hud, .train-view-active .timer-hud, .train-view-active .codes-wallet, .train-view-active .train-view-open, .train-view-active .approval-status, .train-view-active .touch-controls { visibility: hidden !important; opacity: 0 !important; }
+.train-view-active .hud, .train-view-active .hint, .train-view-active .mission-hud, .train-view-active .timer-hud, .train-view-active .codes-wallet, .train-view-active .route-tools, .train-view-active .approval-status, .train-view-active .touch-controls { visibility: hidden !important; opacity: 0 !important; }
 
 .failure-layer, .success-layer {
   position: fixed;
@@ -664,7 +706,8 @@ button { font: inherit; }
   .rescue-controls { left: 14px; bottom: 100px; width: min(360px, calc(100vw - 28px)); }
   .station-controls { left: 14px; bottom: 100px; }
   .lock-console form { grid-template-columns: 92px 1fr 62px; }
-  .minimap-shell { top: 75px; left: 14px; width: 142px; padding: 7px; border-radius: 17px; }
+  .route-tools { top: 75px; left: 14px; width: 156px; gap: 10px; }
+  .minimap-shell { padding: 7px; border-radius: 17px; }
   .minimap-shell small { display: none; }
   .mission-hud { top: 14px; min-width: 220px; }
   .story-panel { padding: 24px 20px 20px; }
@@ -680,7 +723,13 @@ button { font: inherit; }
   .timer-hud > div { min-width: 104px; }
   .timer-hud strong { font-size: 19px; }
   .timer-hud button { padding: 7px 8px; }
-  .train-view-open { top: auto; bottom: 100px; left: 50%; translate: -50% 0; }
+  .train-view-open { gap: 6px; min-height: 52px; padding: 8px; font-size: 10px; }
+  .train-view-open__icon { flex-basis: 24px; height: 29px; }
+  .train-view-open__icon svg { width: 19px; height: 19px; }
+  .train-view-open__label small { font-size: 5px; }
+  .train-view-open__play { padding-left: 5px; font-size: 7px; }
+  .train-video-dialog { width: min(calc(100vw - 24px), calc((100dvh - 110px) * 16 / 9)); border-radius: 15px; }
+  .train-video-dialog__header { padding: 12px; }
   .codes-wallet { top: auto; right: 14px; bottom: 178px; }
 
   .touch-controls {
@@ -719,7 +768,8 @@ button { font: inherit; }
 @media (max-height: 500px) {
   .intro > p { margin-bottom: 18px; }
   .intro__tip { display: none; }
-  .minimap-shell { width: 118px; top: 68px; }
+  .route-tools { top: 68px; }
+  .minimap-shell { width: 118px; }
   .story-layer { place-items: start center; padding: 12px; }
   .story-panel { padding: 19px 22px; }
   .puzzle-panel { max-height: none; }

@@ -233,31 +233,64 @@ export class Game {
     this.trainViewLayer = document.querySelector('#train-view')
     this.trainViewClose = document.querySelector('#train-view-close')
     this.trainViewStatus = document.querySelector('#train-view-status')
+    this.trainVideoDialog = document.querySelector('#train-video-dialog')
+    this.trainVideo = document.querySelector('#train-video')
+    this.trainVideoError = document.querySelector('#train-video-error')
     this.trainViewOpen = false
     this.trainViewLocked = false
     this.trainViewButton.addEventListener('click', () => this.openTrainView())
     this.trainViewClose.addEventListener('click', () => this.closeTrainView())
+    this.trainVideoDialog.addEventListener('cancel', (event) => {
+      event.preventDefault()
+      this.closeTrainView()
+    })
+    this.trainVideoDialog.addEventListener('close', () => {
+      if (!this.trainVideoDialog.open && this.trainViewOpen && !this.trainViewLocked) this.closeTrainView()
+    })
+    this.trainVideoDialog.addEventListener('click', (event) => {
+      if (event.target !== this.trainVideoDialog) return
+      const bounds = this.trainVideoDialog.getBoundingClientRect()
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) this.closeTrainView()
+    })
+    this.trainVideo.addEventListener('error', () => { this.trainVideoError.hidden = false })
   }
 
   openTrainView({ locked = false } = {}) {
-    if (this.puzzles?.completed) return
+    if (this.puzzles?.completed || (this.trainViewLocked && !locked)) return
+    if (this.trainViewOpen) {
+      if (!locked) return
+      this.closeTrainView({ force: true, resume: false })
+    }
     this.trainViewOpen = true
     this.trainViewLocked = locked
-    this.trainViewLayer.classList.add('is-active')
+    this.trainViewLayer.classList.toggle('is-active', locked)
     this.trainViewLayer.classList.toggle('is-impact', locked)
-    this.trainViewClose.hidden = locked
     document.documentElement.classList.add('train-view-active')
     this.pauseDriving(locked ? 'IMPACT' : 'TRAIN VIEW')
+    if (!locked) {
+      this.trainVideoError.hidden = true
+      this.trainVideoDialog.showModal()
+      if (!this.trainVideo.getAttribute('src')) this.trainVideo.src = this.trainVideo.dataset.src
+      this.trainVideo.currentTime = 0
+      // A direct button click permits playback with sound; native controls remain available.
+      this.trainVideo.play().catch(() => {})
+    }
   }
 
   closeTrainView({ force = false, resume = true } = {}) {
     if (this.trainViewLocked && !force) return
+    const wasVideoOpen = this.trainVideoDialog.open
     this.trainViewOpen = false
     this.trainViewLocked = false
+    this.trainVideo.pause()
+    this.trainVideo.currentTime = 0
+    if (this.trainVideoDialog.open) this.trainVideoDialog.close()
     this.trainViewLayer.classList.remove('is-active', 'is-impact')
-    this.trainViewClose.hidden = false
     document.documentElement.classList.remove('train-view-active')
-    if (resume && !this.isDrivingBlocked()) this.enableDriving()
+    if (resume && !this.isDrivingBlocked()) {
+      this.enableDriving()
+      if (wasVideoOpen) this.trainViewButton.focus({ preventScroll: true })
+    }
   }
 
   toggleRescuePanel(force) {
@@ -416,7 +449,7 @@ export class Game {
     this.puzzles.update(delta)
     this.updateRescueInteraction()
     const storyCameraActive = this.story.update(delta)
-    if (this.trainViewOpen) {
+    if (this.trainViewOpen && this.trainViewLocked) {
       this.world.rescue.train.applyCinematicCamera(this.camera, this.cameraTarget, delta)
       const train = this.world.rescue.train.getState()
       this.trainViewStatus.textContent = train.phase === 'crashing'

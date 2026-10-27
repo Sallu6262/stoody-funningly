@@ -35,7 +35,7 @@ The current production version has:
 - An opening cinematic, story dialogue, configurable first clue, minimap, waypoint, and distance indicator.
 - A separate Answer Submission Station and a reusable schema-driven puzzle form used by all three checkpoints.
 - Google Sheets draft saving, submission, manual approval/rejection polling, examiner feedback, and three server-awarded lock codes.
-- Persisted per-paper timers, timeout/retry flow, train camera Easter egg, server-verified lock entry, and a final rescue sequence.
+- Persisted per-paper timers, timeout/retry flow, a train-video Easter egg, server-verified lock entry, and a final rescue sequence.
 - Desktop keyboard and mobile/coarse-pointer controls.
 - Production deployment on Netlify with serverless functions protecting the Google integration.
 
@@ -86,7 +86,8 @@ The current production version has:
 - The timer runs while solving/driving, pauses as soon as a submission is sent, resumes after rejection, and completes safely after approval.
 - Approval reveals the next checkpoint; after Checkpoint 3, the player is routed to the captive.
 - Added the moving licensed locomotive, second tunnel, cartoon voxel timeout burst, failure screen, retry flow, and a temporary **End timer** test button.
-- Added the closable **Where's the Train?** live camera with two placeholder driver faces.
+- Added **Where's the Train?** above the top-left map, now styled as a lavender railway-cinema ticket. Clicking it plays Salman's supplied 10-second video in a centered native dialog with a red close button, Escape/backdrop dismissal, and standard playback controls.
+- The video is loaded only on first opening; closing stops playback and resets it. The original live train camera remains dedicated to the timeout/impact sequence.
 - Lock entry now checks fresh server status before opening, so edited browser progress cannot manufacture an approval or code.
 - Added final rescue animation and success state after all three locks open.
 - Progress, drafts, timers, approved papers, codes, opened locks, and completion survive refresh.
@@ -163,14 +164,17 @@ Current build sizes:
 
 | File/scope | Raw | Gzip |
 |---|---:|---:|
-| HTML | 9,497 B | 2,787 B |
-| CSS | 25,044 B | 5,498 B |
-| JavaScript | 802,244 B | 212,971 B |
+| HTML | 10,846 B | 3,213 B |
+| CSS | 27,486 B | 6,114 B |
+| JavaScript | 803,510 B | 213,249 B |
 | Favicon | 307 B | 237 B |
 | Locomotive GLB | 821,108 B | 246,224 B |
-| Built artifact total | 1,658,200 B | 467,717 B |
+| Train video (on demand) | 3,684,490 B | 3,676,886 B |
+| Built artifact total | 5,347,747 B | 4,145,923 B |
 
 The locomotive is now requested by Phase 5 because it is part of the active timer threat and train camera.
+
+Train-video update verification (27 October 2026): Playwright confirmed the button is above the map on desktop and mobile, the supplied 1280×720 video plays, the popup fits the viewport, the red close button and Escape stop/reset playback, and timeout while watching transitions safely to impact and retry. The five existing tests and production build passed.
 
 Existing verification screenshots:
 
@@ -180,7 +184,7 @@ Existing verification screenshots:
 ## Known limitations and deliberately deferred work
 
 - Actual exam/puzzle questions have not been supplied; all three papers use placeholder content.
-- The two drivers and captive use placeholder faces.
+- The 3D drivers and captive use placeholder faces; the Easter-egg video is Salman's supplied clip at `public/assets/train-cinema.mp4`.
 - The temporary **End timer** button is intentionally visible for animation testing and should be removed or restricted before the final public release if Salman requests it.
 - The updated Apps Script has not been copied/deployed and its setup function has not been rerun, so the existing live sheet may still contain only the Phase 4 Checkpoint 1 configuration.
 - Player identity is a generated localStorage ID, not an authenticated account. Clearing browser storage creates a new ID.
