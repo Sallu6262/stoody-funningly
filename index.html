@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#102e34" />
+    <meta name="description" content="A lightweight low-poly driving world by Salman & Wajeha." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Salman & Wajeha — Open Road</title>
+  </head>
+  <body>
+    <main id="game" aria-label="Salman and Wajeha Open Road driving game">
+      <canvas id="game-canvas" tabindex="-1" aria-label="3D driving world"></canvas>
+
+      <section class="intro" id="intro" aria-labelledby="game-title">
+        <div class="intro__eyebrow">A LITTLE WORLD BY</div>
+        <h1 id="game-title"><span>Salman</span> <i>&amp;</i> <span>Wajeha</span></h1>
+        <p>Open Road</p>
+        <button id="start-button" type="button">
+          <span>Start your engine</span>
+          <small>WASD / ARROWS TO DRIVE</small>
+        </button>
+        <div class="intro__tip">Space brakes · Shift boosts · R resets</div>
+      </section>
+
+      <aside class="hud" aria-live="polite">
+        <div class="hud__brand">S<span>&amp;</span>W</div>
+        <div class="hud__speed"><strong id="speed">000</strong><span>KM/H</span></div>
+        <div class="hud__status"><i></i><span id="status">READY</span></div>
+      </aside>
+
+      <div class="hint" id="hint">Wide circuit • checkpoints use the short access roads</div>
+
+      <aside class="mission-hud" id="mission-hud" aria-live="polite">
+        <span>FIRST MISSION</span>
+        <strong>Reach Signal Point</strong>
+        <b id="waypoint-distance">-- m</b>
+      </aside>
+
+      <aside class="timer-hud" id="timer-hud" aria-live="polite">
+        <div>
+          <span id="timer-checkpoint">CHECKPOINT 1</span>
+          <strong id="timer-value">05:00</strong>
+          <small id="timer-state">TRAIN APPROACHING</small>
+        </div>
+        <button id="timer-end" type="button" title="Testing control: immediately finish the active countdown">End timer</button>
+      </aside>
+
+      <aside class="codes-wallet" id="codes-wallet" aria-label="Collected lock codes">
+        <span>COLLECTED CODES</span>
+        <div>
+          <button type="button" data-copy-code="1" disabled>Lock 1: —</button>
+          <button type="button" data-copy-code="2" disabled>Lock 2: —</button>
+          <button type="button" data-copy-code="3" disabled>Lock 3: —</button>
+        </div>
+      </aside>
+
+      <button class="train-view-open" id="train-view-open" type="button">Where's the Train?</button>
+
+      <section class="train-view" id="train-view" aria-label="Live train view" aria-live="polite">
+        <div class="train-view__frame">
+          <span>LIVE TUNNEL CAMERA</span>
+          <strong id="train-view-status">TRAIN WAITING IN THE DARK</strong>
+          <small>Two placeholder drivers are visible through the front windows.</small>
+        </div>
+        <button id="train-view-close" type="button" aria-label="Close train view">Close</button>
+      </section>
+
+      <aside class="minimap-shell" id="minimap-shell" aria-label="Route map">
+        <div><span>ROUTE</span><b>01</b></div>
+        <canvas id="minimap" width="184" height="184"></canvas>
+        <small>Hidden locations appear when discovered</small>
+      </aside>
+
+      <section class="story-layer" id="story-layer" aria-live="polite">
+        <button class="cinematic-skip" id="cinematic-skip" type="button">Skip cinematic</button>
+        <div class="cinematic-caption" id="cinematic-caption">THREE LOCKS. ONE CHANCE.</div>
+
+        <article class="story-panel" id="story-panel" role="dialog" aria-modal="true" aria-labelledby="story-title">
+          <span class="story-panel__eyebrow" id="story-eyebrow">AN URGENT MESSAGE</span>
+          <h2 id="story-title">Your friend is trapped</h2>
+          <p id="story-text"></p>
+          <form class="clue-form" id="clue-form" hidden>
+            <label id="clue-prompt" for="clue-input"></label>
+            <input id="clue-input" type="text" autocomplete="off" autocapitalize="none" enterkeyhint="done" maxlength="80" />
+            <output id="clue-error"></output>
+          </form>
+          <footer>
+            <button class="story-panel__skip" id="story-skip" type="button">Skip to clue</button>
+            <button class="story-panel__continue" id="story-continue" type="button">Continue</button>
+          </footer>
+        </article>
+      </section>
+
+      <section class="puzzle-layer" id="puzzle-layer" aria-live="polite">
+        <article class="puzzle-panel" role="dialog" aria-modal="true" aria-labelledby="puzzle-title">
+          <header>
+            <div>
+              <span>ANSWER SUBMISSION</span>
+              <h2 id="puzzle-title">Checkpoint 1 response</h2>
+            </div>
+            <button id="puzzle-close" type="button" aria-label="Close answer form">×</button>
+          </header>
+          <p class="puzzle-panel__intro" id="puzzle-intro"></p>
+          <form id="puzzle-form">
+            <div class="puzzle-fields" id="puzzle-fields"></div>
+            <output class="puzzle-form__feedback" id="puzzle-form-feedback"></output>
+            <footer>
+              <small>Your work is sent for examiner review. Answers are not graded in the browser.</small>
+              <button id="puzzle-submit" type="submit">Submit for approval</button>
+            </footer>
+          </form>
+        </article>
+      </section>
+
+      <aside class="approval-status" id="approval-status" aria-live="polite">
+        <i></i>
+        <div>
+          <span id="approval-eyebrow">EXAMINER STATUS</span>
+          <strong id="approval-title">Awaiting Examiner's Approval</strong>
+          <p id="approval-message">You can keep exploring while your work is reviewed.</p>
+          <small id="approval-player"></small>
+        </div>
+        <button id="approval-action" type="button">Check now</button>
+      </aside>
+
+      <section class="failure-layer" id="failure-layer" aria-live="assertive">
+        <article role="dialog" aria-modal="true" aria-labelledby="failure-title">
+          <span>MISSION FAILED</span>
+          <h2 id="failure-title">Time ran out</h2>
+          <p id="failure-message"></p>
+          <button id="failure-retry" type="button">Retry current paper</button>
+        </article>
+      </section>
+
+      <section class="success-layer" id="success-layer" aria-live="polite">
+        <article role="dialog" aria-modal="true">
+          <span>RESCUE COMPLETE</span>
+          <h2>All three locks are open</h2>
+          <p>All three papers were approved, every lock opened, and your friend is safe.</p>
+          <small>Salman &amp; Wajeha · Mission complete</small>
+        </article>
+      </section>
+
+      <section class="station-controls" id="station-controls" aria-label="Answer submission station">
+        <button id="station-open" type="button">
+          <span>Answer Station</span>
+          <small>PRESS E TO OPEN</small>
+        </button>
+      </section>
+
+      <section class="rescue-controls" id="rescue-controls" aria-label="Rescue lock console">
+        <button class="rescue-controls__toggle" id="rescue-toggle" type="button">
+          <span>Lock console</span>
+          <small>PRESS E • 0/3 OPEN</small>
+        </button>
+        <div class="lock-console" id="lock-console" aria-hidden="true">
+          <header>
+            <div><strong>Rescue locks</strong><span>Enter each code separately</span></div>
+            <button id="rescue-close" type="button" aria-label="Close lock console">×</button>
+          </header>
+          <form data-lock-form="0">
+            <label for="lock-code-1"><b>1</b> Lock one</label>
+            <input id="lock-code-1" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Enter code" />
+            <button type="submit">Unlock</button>
+            <output>Locked</output>
+          </form>
+          <form data-lock-form="1">
+            <label for="lock-code-2"><b>2</b> Lock two</label>
+            <input id="lock-code-2" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Enter code" />
+            <button type="submit">Unlock</button>
+            <output>Locked</output>
+          </form>
+          <form data-lock-form="2">
+            <label for="lock-code-3"><b>3</b> Lock three</label>
+            <input id="lock-code-3" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Enter code" />
+            <button type="submit">Unlock</button>
+            <output>Locked</output>
+          </form>
+        </div>
+      </section>
+
+      <div class="touch-controls" aria-label="Touch driving controls">
+        <div class="touch-controls__steer">
+          <button data-control="left" aria-label="Steer left">←</button>
+          <button data-control="right" aria-label="Steer right">→</button>
+        </div>
+        <div class="touch-controls__drive">
+          <button data-control="brake" aria-label="Brake or reverse">▼</button>
+          <button class="touch-controls__go" data-control="forward" aria-label="Accelerate">GO</button>
+          <button data-control="boost" aria-label="Boost">⚡</button>
+        </div>
+      </div>
+
+      <noscript>This experience needs JavaScript enabled.</noscript>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/puzzle/paper"
+  to = "/.netlify/functions/puzzle-paper"
+  status = 200
+
+[[redirects]]
+  from = "/api/puzzle/draft"
+  to = "/.netlify/functions/puzzle-draft"
+  status = 200
+
+[[redirects]]
+  from = "/api/puzzle/submit"
+  to = "/.netlify/functions/puzzle-submit"
+  status = 200
+
+[[redirects]]
+  from = "/api/puzzle/status"
+  to = "/.netlify/functions/puzzle-status"
+  status = 200
