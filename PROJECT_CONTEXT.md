@@ -176,6 +176,8 @@ The locomotive is now requested by Phase 5 because it is part of the active time
 
 Train-video update verification (27 October 2026): Playwright confirmed the button is above the map on desktop and mobile, the supplied 1280×720 video plays, the popup fits the viewport, the red close button and Escape stop/reset playback, and timeout while watching transitions safely to impact and retry. The five existing tests and production build passed.
 
+The train-video update was deployed from Git commit `9519452` as Netlify deploy `6ae0eec9459d2d5c571ef1b9`. A production Playwright check verified video playback from the public asset URL, red-close dismissal, stopped/reset media, restored button focus, and no JavaScript runtime errors. The existing Checkpoint 2/3 backend configuration warnings remain unchanged.
+
 Existing verification screenshots:
 
 - `production-live-check.png`
