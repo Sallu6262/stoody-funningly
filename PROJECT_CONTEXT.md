@@ -6,7 +6,7 @@ Last updated: 27 October 2026 (Asia/Karachi)
 
 Ask Codex to read this file before making changes:
 
-> Continue `salman-wajeha-racing`. Read `PROJECT_CONTEXT.md`, inspect the current files, and preserve the existing driving feel, performance, Google Sheets security model, and Netlify deployment. Do not add train movement, timers, or later story features unless I explicitly request them.
+> Continue `salman-wajeha-racing`. Read `PROJECT_CONTEXT.md`, inspect the current files, and preserve the existing driving feel, performance, Phase 5 train/timer flow, Google Sheets security model, Git history, and Netlify deployment. Do not add later story features unless I explicitly request them.
 
 Project directory:
 
@@ -16,9 +16,13 @@ Production game:
 
 https://salman-wajeha-racing.netlify.app/
 
+GitHub repository:
+
+https://github.com/Sallu6262/stoody-funningly
+
 ## Current status
 
-The project is a working local Phase 5 build based on the deployed Phase 4 site. Phase 5 has not been deployed and must remain local until Salman approves it. It is a lightweight Three.js/Cannon.js driving game inspired by Bruno Simon's Folio 2019, but uses a new map, F1-inspired car, palette, environment, UI, and Salman & Wajeha branding.
+The project is a deployed Phase 5 build. It is a lightweight Three.js/Cannon.js driving game inspired by Bruno Simon's Folio 2019, but uses a new map, F1-inspired car, palette, environment, UI, and Salman & Wajeha branding.
 
 The current production version has:
 
@@ -151,7 +155,9 @@ Freshly verified locally on 27 October 2026:
 - Production source maps remain disabled.
 - Playwright covered timer start, live train view, forced timeout, voxel burst, second-tunnel exit, retry, rejection/resume, all three approvals, three server-verified unlocks, final rescue, and refresh restoration.
 - Zero browser console errors were recorded during the verification run.
-- No deployment was performed; the production URL still serves the approved Phase 4 build.
+- Phase 5 frontend and all four Netlify puzzle functions were deployed to production as Netlify deploy `6ae0dec59af0370e98765430` from Git commit `7d78592`.
+- A production Playwright smoke check confirmed the game loads, the story reveals Checkpoint 1, and the lightweight **Where's the Train?** view opens and closes.
+- The live API currently returns Checkpoint 1, but Checkpoints 2 and 3 fall back to bundled papers because the live Apps Script/sheet configuration has not yet been updated. The resulting two 502 resource errors are expected until that backend step is completed.
 
 Current build sizes:
 
@@ -178,7 +184,7 @@ Existing verification screenshots:
 - The temporary **End timer** button is intentionally visible for animation testing and should be removed or restricted before the final public release if Salman requests it.
 - The updated Apps Script has not been copied/deployed and its setup function has not been rerun, so the existing live sheet may still contain only the Phase 4 Checkpoint 1 configuration.
 - Player identity is a generated localStorage ID, not an authenticated account. Clearing browser storage creates a new ID.
-- The project directory currently has no Git repository/history. Before a large next phase, initialize version control or make a backup if Salman approves.
+- Git is initialized on `main`, connected to `Sallu6262/stoody-funningly`, and protected by a GitHub Actions test/build workflow. Local secrets, Netlify state, dependencies, and build output are ignored.
 
 ## Recommended next steps
 
@@ -192,7 +198,7 @@ Existing verification screenshots:
    - Lock number and private reward code.
 2. **Update and validate the three sheet tabs.** Keep only one `LIVE` paper per checkpoint. Use the Apps Script **Racing Papers → Validate live papers** menu.
 3. **Run an end-to-end production check.** Start a fresh player, discover Checkpoint 1, submit every field, confirm live draft columns, change the sheet status to `APPROVED`/`REJECTED`, verify polling, feedback, code award, and Lock 1 unlock.
-4. **Approve and deploy Phase 5.** Only after Salman approves: update Apps Script, run `setupPuzzleWorkbook`, validate all three live papers, then deploy the Netlify build.
+4. **Complete the Phase 5 backend rollout.** Copy/deploy the updated Apps Script, run `setupPuzzleWorkbook`, validate all three live papers, and repeat the production approval/rejection check for Checkpoints 2 and 3.
 5. **Replace placeholder faces.** Add the two driver photos and captive photo when Salman provides them.
 
 ## Local commands
